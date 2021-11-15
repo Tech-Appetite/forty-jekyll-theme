@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 'Coveo for Sitecore: How to prioritize newer over stale migrated content'
+title: 'Quick fix: Sitecore pipeline.debug module for Sitecore v9.1.1+'
 description: The pipeline.debug Sitecore module, created by Morten Engel, is a fantastic pipeline output visualization tool that requires minimal set up in. While working on Sitecore v9.1.1, I was sad to see that initally the module would not run! In this post I'll quickly provide a work around for getting this great tool back up and running.
 image: assets/images/pic09.jpg
 ---
