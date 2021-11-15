@@ -8,7 +8,7 @@ image: assets/images/pic09.jpg
 ## The Issue
 After logging in to Sitecore as "admin" and navigating to `[scheme]://[host]/sitecore/admin/pipelinedebug.html`, I noticed that this module page still prompted me to log in. So I took a closer look at the front-end and noticed that it's fairly straight forward to read the main JS file that the modules comes with, `PipelineDebug.js`. In this file you will find a `service.update` method that takes in a method parameter, such as _login_ and _listpipelines_. Appropriate data is then passed via AJAX to a single Controller `/pipelinedebug/[action]`, of which is registered part of the `Sitecore.Mvc.Pipelines.Loader.InitializeRoutes` processor. As seen below in dev console debug mode, the `response.Status` of any method was always returning "Unauthorized":
 
-![](assets/images/pipeline.debug-js-auth-fail.png)
+<img src="{% link assets/images/pipeline.debug-js-auth-fail.png %}" alt="" />
 
 Decompiling the solution shows us that the `PipelineDebugController` attribute `[AdministratorOnly]` checks for `Sitecore.Context.IsAdministrator`. Hint - we're dealing with a change to the validation identity of unresolved site context possibly because the API calls above do not use a site switcher.
 

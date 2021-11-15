@@ -31,7 +31,7 @@ _new markup_
 </some_html>
 ```
 Doing this manually would be exhausting. We would have to not only go through every content item of this type and add the `em` markup, but also parse the link's `Dynamic url` to figure out if it's a Pdf or a Zip.
-![I know that feel, bro](assets/images/i_hug_that_feel.png)
+<img src="{% link assets/images/i_hug_that_feel.png %}" alt="" />
 
 ## Luckily for us..
 We have PowerShell! And because we're working in context of the ISE, we can already reference the Html Agility Pack included with Sitecore (I've yet to come across any issues with the version being from _2014_ even in Sitecore v9.1.1, but you may find yourself using a newer method that can be resolved by loading a newer dll with `[Reflection.Assembly]::LoadFile`).

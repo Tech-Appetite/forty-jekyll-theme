@@ -22,15 +22,15 @@ Item last modification can be _carefully_ fine tuned for a specific query pipeli
 
 1.  Select Query Pipelines > [Query Pipeline] > Ranking Weights Tab. In the screenshow below, I have identified a new rule for Item last modification to be set to a value of 2 (out of 5) `when the result is either an Article or Webinar and the Query is empty`.
 
-	![coveo query pipeline ranking weights view](assets/images/coveo-query-pipeline_ranking-weights-view_2020-05-11.png)
+<img src="{% link assets/images/coveo-query-pipeline_ranking-weights-view_2020-05-11.png %}" alt="" />
 
 2.  Select button on the top right "Add Rule" to open a new _Ranking Weight Rule_ that will allow us to adjust the Item last modification and create a new rule. In the screenshot below, I have tuned Item last modification on the left-hand side and have selected a pre-existing condition on the right-hand side:
 
-	![coveo query pipeline ranking weights edit rule view](assets/images/coveo-query-pipeline_ranking-weights-edit_2020-05-11.png)
+<img src="{% link assets/images/coveo-query-pipeline_ranking-weights-edit_2020-05-11.png %}" alt="" />
 
 3.  Create a new Condition by going to Search > Conditions > Add Condition (conditions are re-usable across many rules for QPL and ML). In the screenshot below, I have identified a Coveo Custom Context Key, `resulttype`, that my team uses to keep track of the corresponding result's Sitecore Template Name. I won't get into the details of how to track and send custom context keys as this step is relatively lightweight and can be found by Coveo documentation [here](https://docs.coveo.com/en/399/javascript-search-framework/sending-custom-context-information).
 
-	![coveo search condition for custom context key resultType and empty Query](assets/images/coveo-condition_resulttype-article-webinar-and-query-empty_2020-05-11.png)
+<img src="{% link assets/images/coveo-condition_resulttype-article-webinar-and-query-empty_2020-05-11.png %}" alt="coveo search condition for custom context key resultType and empty Query" />
 
 4.  Select "Add Rule" to save this Rule with condition to the Ranking Weights of your Query Pipeline. With this tuning in place, Coveo states that a value of 0-4 will progressively reduce the weight of a ranking factor relative to its pre-tuned value. This did not drastically push a 2012 Article out of sight because of the quality of the document alone had one of the highest document weight scores.
 
@@ -49,4 +49,4 @@ args.queryBuilder.advancedExpression
 ## The Result
 Reducing the Item last modification weight for my Query Pipeline and adding a custom Query Ranking Function visibly shifted the results to a more date-eccentric ranking while keeping the Relevancy of other ranking factors. In the screenshot below, the first result has been boosted by an additional 466 points solely from the Ranking Function. We don't see a true 500 point boost to an Upcoming Webinar due to Coveo's ranking function algorithm which states that the boosting value used will not reach the modifier limit if the results around it don't reach a point where a larger boost is necessary.
 
-![coveo search result ranking info and custom ranking function scores](assets/images/coveo-results-latest-by-ranking-function_2020-05-12.png)
+<img src="{% link assets/images/coveo-results-latest-by-ranking-function_2020-05-12.png %}" alt="coveo search result ranking info and custom ranking function scores" />
