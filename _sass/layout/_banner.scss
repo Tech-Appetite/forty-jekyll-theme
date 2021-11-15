@@ -33,7 +33,7 @@
 		display: block;
 		height: 100%;
 		left: 0;
-		opacity: 0.85;
+		opacity: 0.45;
 		position: absolute;
 		top: 0;
 		width: 100%;
@@ -97,6 +97,10 @@
 		height: 75vh;
 		min-height: 30em;
 		max-height: 50em;
+
+		@include breakpoint(large) {
+			height: 88vh;
+		}
 
 		&.alt {
 			opacity: 0.75;
