@@ -2,7 +2,7 @@
 layout: post
 title: 'Coveo for Sitecore: Configure an External Source Tab without Sitecore Items'
 description: Coveo for Sitecore comes with an out-of-the-box tab component that can be useful for switching between different types of Sitecore content. I will go over how to supress Sitecore content to only reveal External content.
-image: assets/images/pic09.jpg
+image: assets/images/coveo-for-sitecore-720x430.png
 ---
 
 Coveo for Sitecore (Coveo Hive) comes with an out-of-the-box Coveo Tab component that can be useful for switching between different types of Sitecore content, but lacks a direct way within Sitecore to *only show External Content without Sitecore content*.
