@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<!--
+	Forty by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+
+<head>
+	<title>Sitecore PowerShell Series: Insert appropriate font icons into Sitecore Links with Html Agility Pack! | Tech Appetite</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<!--[if lte IE 8]><script src="/tech-appetite/assets/js/ie/html5shiv.js"></script><![endif]-->
+	<link rel="stylesheet" href="/tech-appetite/assets/css/main.css" />
+	<!--[if lte IE 9]><link rel="stylesheet" href="/tech-appetite/assets/css/ie9.css" /><![endif]-->
+	<!--[if lte IE 8]><link rel="stylesheet" href="/tech-appetite/assets/css/ie8.css" /><![endif]-->
+</head>
+
+
+<body>
+
+    <!-- Wrapper -->
+<div id="wrapper">
+
+<!-- Header -->
+<header id="header">
+	<a href="/tech-appetite/" class="logo"><strong>Tech Appetite</strong> <span></span></a>
+	<nav>
+		<a href="#menu">Navigate</a>
+	</nav>
+</header>
+
+<!-- Menu -->
+<nav id="menu">
+	<ul class="links">
+        
+		    
+		
+		    
+		
+		    
+		
+		    
+		
+		    
+		        <li><a href="/tech-appetite/">Home</a></li>
+	    	
+		
+		    
+		
+		    
+		
+		
+		    
+		
+		    
+		        <li><a href="/tech-appetite/all_posts.html">All posts</a></li>
+		    
+		
+		    
+		
+		    
+		
+		    
+		
+		    
+		
+	</ul>
+	<!-- <ul class="actions vertical">
+		<li><a href="#" class="button special fit">Get Started</a></li>
+		<li><a href="#" class="button fit">Log In</a></li>
+	</ul> -->
+</nav>
+ 
+    
+    
+<!-- Main -->
+<div id="main" class="alt">
+
+<!-- One -->
+<section id="one">
+	<div class="inner">
+		<header class="major">
+			<h1>Sitecore PowerShell Series: Insert appropriate font icons into Sitecore Links with Html Agility Pack!</h1>
+		</header>
+		<span class="image main"><img src="/tech-appetite/assets/images/sitecore-and-powershell.jpg" alt="" /></span>
+		<h2 id="the-scenario">The Scenario</h2>
+<p>You just completed a fairly substantial content migration from an archaic CMS into Sitecore. These new Product Detail Pages all contain associated content items labeled “Support Links” that holds a single Rich-Text Editor field that simply renders on the page as a Datasource. The client takes one quick look at the page and notices that all of the support links are missing super important icons that are used to indicate the file type of PDF or Zip. These icons were clearly in the new design, but this old data never had the markup required.</p>
+
+<p>Let’s take a look at the old markup and the desired markup:</p>
+
+<p><em>old markup</em></p>
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;some_html&gt;</span>
+    <span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"~/media/[guid].ashx"</span><span class="nt">&gt;</span>Support Link 1 (Pdf)<span class="nt">&lt;/a&gt;</span>
+    <span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"~/media/[guid].ashx"</span><span class="nt">&gt;</span>Support Link 2 (Zip)<span class="nt">&lt;/a&gt;</span>
+<span class="nt">&lt;/some_html&gt;</span>
+</code></pre></div></div>
+<p><em>new markup</em></p>
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;some_html&gt;</span>
+    <span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"~/media/[guid].ashx"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;em</span> <span class="na">class=</span><span class="s">'fa fa-file-pdf-o'</span> <span class="na">aria-hidden=</span><span class="s">'true'</span> <span class="na">style=</span><span class="s">'padding-right: 5px;'</span><span class="nt">&gt;&lt;/em&gt;</span>
+        Support Link 1 (Pdf)
+    <span class="nt">&lt;/a&gt;</span>
+    <span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"~/media/[guid].ashx"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;em</span> <span class="na">class=</span><span class="s">'fa fa-file-archive-o'</span> <span class="na">aria-hidden=</span><span class="s">'true'</span> <span class="na">style=</span><span class="s">'padding-right: 5px;'</span><span class="nt">&gt;&lt;/em&gt;</span>
+        Support Link 2 (Zip)
+    <span class="nt">&lt;/a&gt;</span>
+<span class="nt">&lt;/some_html&gt;</span>
+</code></pre></div></div>
+<p>Doing this manually would be exhausting. We would have to not only go through every content item of this type and add the <code class="language-plaintext highlighter-rouge">em</code> markup, but also parse the link’s <code class="language-plaintext highlighter-rouge">Dynamic url</code> to figure out if it’s a Pdf or a Zip.
+<img src="/tech-appetite/assets/images/i_hug_that_feel.png" alt="" /></p>
+
+<h2 id="luckily-for-us">Luckily for us..</h2>
+<p>We have PowerShell! And because we’re working in context of the ISE, we can already reference the Html Agility Pack included with Sitecore (I’ve yet to come across any issues with the version being from <em>2014</em> even in Sitecore v9.1.1, but you may find yourself using a newer method that can be resolved by loading a newer dll with <code class="language-plaintext highlighter-rouge">[Reflection.Assembly]::LoadFile</code>).</p>
+
+<p>We can start the script with getting all the items named “Support Links” with a specific template id:</p>
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$supportItems</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Get-Item</span><span class="w"> </span><span class="nt">-Path</span><span class="w"> </span><span class="nx">master:</span><span class="w"> </span><span class="nt">-Query</span><span class="w"> </span><span class="s2">"/sitecore/content/Tenant/Site A/Homepage//*[@@templateid='{A099DC2D-1E23-499F-B101-DBB0902148F4}' and @@name='Support Links']"</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Loop through these items and load up the content from the Rich-Text Editor field into the Agility Pack magic:</p>
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$supportItems</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">ForEach-Object</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nv">$supportItem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$_</span><span class="w">
+    </span><span class="nv">$content</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$_</span><span class="o">.</span><span class="s2">"Content"</span><span class="w">    </span><span class="c">## accessing the field value this way lets us not worry about the Begin/End Edit requirements</span><span class="w">
+    
+    </span><span class="nv">$htmlDocument</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">New-Object</span><span class="w"> </span><span class="nt">-TypeName</span><span class="w"> </span><span class="nx">HtmlAgilityPack.HtmlDocument</span><span class="w">
+    </span><span class="nv">$htmlDocument</span><span class="o">.</span><span class="nf">LoadHtml</span><span class="p">(</span><span class="nv">$content</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Find all the anchors using HtmlAgilityPack XPath query:</p>
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">foreach</span><span class="p">(</span><span class="nv">$x</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="nv">$htmlDocument</span><span class="o">.</span><span class="nf">DocumentNode</span><span class="o">.</span><span class="nf">SelectNodes</span><span class="p">(</span><span class="s2">"//a"</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">    </span><span class="c">## foreach anchor in html</span><span class="w">
+    </span><span class="nv">$href</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$x</span><span class="o">.</span><span class="n">Attributes</span><span class="p">[</span><span class="s2">"href"</span><span class="p">]</span><span class="o">.</span><span class="nf">Value</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Check if the anchor is a Sitecore <em>Dynamic Url</em>, capture the Guid and retrieve the Media Item:</p>
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">if</span><span class="w"> </span><span class="p">(</span><span class="nv">$href</span><span class="w">  </span><span class="o">-like</span><span class="w"> </span><span class="s2">"~/media/*"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nv">$guid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">New-Object</span><span class="w"> </span><span class="nt">-TypeName</span><span class="w"> </span><span class="nx">System.guid</span><span class="w"> </span><span class="nt">-ArgumentList</span><span class="w"> </span><span class="err">$</span><span class="p">([</span><span class="n">System.IO.Path</span><span class="p">]::</span><span class="n">GetFileNameWithoutExtension</span><span class="p">(</span><span class="nv">$href</span><span class="p">))</span><span class="w">        </span><span class="c">## parse out the guid with a C# Path Helper Method!</span><span class="w">
+    </span><span class="nv">$mediaItem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Get-Item</span><span class="w"> </span><span class="nt">-Path</span><span class="w"> </span><span class="nx">master:</span><span class="w"> </span><span class="nt">-ID</span><span class="w"> </span><span class="s2">"{</span><span class="si">$(</span><span class="nv">$guid</span><span class="si">)</span><span class="s2">}"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>If the <code class="language-plaintext highlighter-rouge">Media Item</code> is a Zip or Pdf AND the icon has yet to be added, adjust the anchor’s inner HTML to include the icon:</p>
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">if</span><span class="w"> </span><span class="p">(</span><span class="nv">$mediaItem</span><span class="o">.</span><span class="nf">TemplateName</span><span class="w"> </span><span class="o">-eq</span><span class="w"> </span><span class="s2">"Pdf"</span><span class="w"> </span><span class="o">-and</span><span class="w"> </span><span class="p">(</span><span class="o">-not</span><span class="w"> </span><span class="nv">$x</span><span class="o">.</span><span class="nf">InnerHtml</span><span class="o">.</span><span class="nf">Contains</span><span class="p">(</span><span class="s2">"fa-file-pdf"</span><span class="p">)))</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">Write-Host</span><span class="w"> </span><span class="s2">"Found PDF Link for Link [</span><span class="si">$(</span><span class="nv">$href</span><span class="si">)</span><span class="s2">], DisplayName [</span><span class="si">$(</span><span class="nv">$mediaItem</span><span class="o">.</span><span class="nf">DisplayName</span><span class="si">)</span><span class="s2">]"</span><span class="w">								</span><span class="c">## LOG some good info</span><span class="w">
+    </span><span class="nv">$x</span><span class="o">.</span><span class="nf">InnerHtml</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"&lt;em class='fa fa-file-pdf-o' aria-hidden='true' style='padding-right: 5px;'&gt;&lt;/em&gt;"</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nv">$x</span><span class="o">.</span><span class="nf">InnerHtml</span><span class="w">		</span><span class="c">## append the icon</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="kr">elseif</span><span class="w"> </span><span class="p">(</span><span class="nv">$mediaItem</span><span class="o">.</span><span class="nf">TemplateName</span><span class="w"> </span><span class="o">-eq</span><span class="w"> </span><span class="s2">"Zip"</span><span class="w"> </span><span class="o">-and</span><span class="w"> </span><span class="p">(</span><span class="o">-not</span><span class="w"> </span><span class="nv">$x</span><span class="o">.</span><span class="nf">InnerHtml</span><span class="o">.</span><span class="nf">Contains</span><span class="p">(</span><span class="s2">"fa-file-archive"</span><span class="p">)))</span><span class="w"> </span><span class="p">{</span><span class="w">
+	</span><span class="n">Write-Host</span><span class="w"> </span><span class="s2">"Found Zip Link for Link [</span><span class="si">$(</span><span class="nv">$href</span><span class="si">)</span><span class="s2">], DisplayName [</span><span class="si">$(</span><span class="nv">$mediaItem</span><span class="o">.</span><span class="nf">DisplayName</span><span class="si">)</span><span class="s2">]"</span><span class="w">
+	</span><span class="nv">$x</span><span class="o">.</span><span class="nf">InnerHtml</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"&lt;em class='fa fa-file-archive-o' aria-hidden='true' style='padding-right: 5px;'&gt;&lt;/em&gt;"</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nv">$x</span><span class="o">.</span><span class="nf">InnerHtml</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Now that we’ve made our updates in the <code class="language-plaintext highlighter-rouge">$htmlDocument</code> object, we can take that HTML and put it back in the Sitecore field:</p>
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$newHTML</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$htmlDocument</span><span class="o">.</span><span class="nf">DocumentNode</span><span class="o">.</span><span class="nf">OuterHtml</span><span class="w">
+</span><span class="bp">$_</span><span class="o">.</span><span class="s2">"Content"</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$newHTML</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="bonus-round">Bonus Round</h2>
+<p>So you let the content authors in to the system a little too early and, lo and behold, over 100 content items were updated to include an inline-style attribute <code class="language-plaintext highlighter-rouge">color:green</code> on the icons. I mean, you gotta hand it to them for trying to fix the design, right? Fortunately you know that if you were to remove this inline-style, the anchor tag’s <em>branded</em> color would be inherited from the inner icon tag once again. Back to the script board we go.</p>
+
+<p>Within the same inner foreach anchor tag, grab the font tag that can either be an <code class="language-plaintext highlighter-rouge">&lt;em&gt;</code> or an <code class="language-plaintext highlighter-rouge">&lt;i&gt;</code>:</p>
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$nodes_em</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">@(</span><span class="nv">$x</span><span class="err">.ChildNodes</span><span class="p">[</span><span class="s2">"em"</span><span class="p">])</span><span class="w">		</span><span class="c">## fun tip: default to an array, @(), since ChildNodes can condense down to returning a single item</span><span class="w">
+</span><span class="nv">$nodes_i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">@(</span><span class="nv">$x</span><span class="err">.ChildNodes</span><span class="p">[</span><span class="s2">"i"</span><span class="p">])</span><span class="w">
+</span></code></pre></div></div>
+
+<p>If any nodes are found with HTML and contains the keyword “green”, remove this style using PowerShell’s <code class="language-plaintext highlighter-rouge">IndexOf</code> and <code class="language-plaintext highlighter-rouge">Remove</code> String methods:</p>
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">if</span><span class="w"> </span><span class="p">(</span><span class="nv">$nodes_i</span><span class="o">.</span><span class="nf">Count</span><span class="w"> </span><span class="o">-and</span><span class="w"> </span><span class="nv">$nodes_i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="nf">OuterHtml</span><span class="w"> </span><span class="o">-and</span><span class="w"> </span><span class="o">-not</span><span class="w"> </span><span class="p">[</span><span class="n">System.String</span><span class="p">]::</span><span class="n">IsNullOrWhiteSpace</span><span class="p">(</span><span class="nv">$nodes_i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="nf">OuterHtml</span><span class="p">)</span><span class="w"> </span><span class="o">-and</span><span class="w"> </span><span class="nv">$nodes_i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="nf">OuterHtml</span><span class="o">.</span><span class="nf">Contains</span><span class="p">(</span><span class="s2">"green"</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+	</span><span class="n">Write-Host</span><span class="w"> </span><span class="s2">"Found color:green to remove from &lt;i&gt;: [</span><span class="si">$(</span><span class="nv">$href</span><span class="si">)</span><span class="s2">] [</span><span class="si">$(</span><span class="nv">$pcItem</span><span class="o">.</span><span class="nf">Id</span><span class="si">)</span><span class="s2">] [</span><span class="si">$(</span><span class="nv">$nodes_i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="nf">OuterHtml</span><span class="si">)</span><span class="s2">]"</span><span class="w">		</span><span class="c">## LOG the icon tag html to be removed</span><span class="w">
+	
+	</span><span class="nv">$attr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$nodes_i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">Attributes</span><span class="p">[</span><span class="s2">"style"</span><span class="p">]</span><span class="w">			</span><span class="c">## grab the inline-style attribute value</span><span class="w">
+	
+	</span><span class="nv">$idxStart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$attr</span><span class="o">.</span><span class="nf">Value</span><span class="o">.</span><span class="nf">IndexOf</span><span class="p">(</span><span class="s2">"color:"</span><span class="p">)</span><span class="w">		</span><span class="c">## get the start and end indexes of the color attribute in order to remove it</span><span class="w">
+	</span><span class="nv">$idxEnd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$attr</span><span class="o">.</span><span class="nf">Value</span><span class="o">.</span><span class="nf">IndexOf</span><span class="p">(</span><span class="s2">";"</span><span class="p">,</span><span class="w"> </span><span class="nv">$idxStart</span><span class="p">)</span><span class="w">
+	
+	</span><span class="kr">if</span><span class="w"> </span><span class="p">(</span><span class="nv">$idxEnd</span><span class="w"> </span><span class="o">-gt</span><span class="w"> </span><span class="nv">$idxStart</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">					</span><span class="c">## always check to make sure the end index was set, since some inline-styles don't end with a semi-colon</span><span class="w">
+	   </span><span class="nv">$attr</span><span class="o">.</span><span class="nf">Value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$attr</span><span class="o">.</span><span class="nf">Value</span><span class="o">.</span><span class="nf">Remove</span><span class="p">(</span><span class="nv">$idxStart</span><span class="p">,</span><span class="w"> </span><span class="nv">$idxEnd</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">$idxStart</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">1</span><span class="p">)</span><span class="w">
+	   </span><span class="n">Write-Host</span><span class="w"> </span><span class="s2">"Removed inline-style color attribute, new inline-style value [</span><span class="si">$(</span><span class="nv">$attr</span><span class="o">.</span><span class="nf">Value</span><span class="si">)</span><span class="s2">]"</span><span class="w">
+	</span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>In this walkthrough we learned how to manipulate existing HTML within the Sitecore CMS with the help of Html Agility Pack and some small C# methods. As always, make sure to set <code class="language-plaintext highlighter-rouge">return</code> in loops and <code class="language-plaintext highlighter-rouge">exit</code> before making changes that could make permanent incorrect changes to your environment! And if you’re looking to bulk update more than 260 items, look to switch to the <code class="language-plaintext highlighter-rouge">Find-Items</code> cmdlet that uses Sitecore Indexes.</p>
+
+	</div>
+</section>
+
+</div>
+
+    <!-- Contact -->
+<section id="contact">
+	<div class="inner">
+		<section>
+			<form action="https://formspree.io/f/mdoyqdrn" method="POST">
+				<div class="field half first">
+					<label for="name">Name</label>
+					<input type="text" name="name" id="name" />
+				</div>
+				<div class="field half">
+					<label for="email">Email</label>
+					<input type="text" name="_replyto" id="email" />
+				</div>
+				<div class="field">
+					<label for="message">Message</label>
+					<textarea name="message" id="message" rows="6"></textarea>
+				</div>
+				<ul class="actions">
+					<li><input type="submit" value="Send Message" class="special" /></li>
+					<li><input type="reset" value="Clear" /></li>
+				</ul>
+			</form>
+		</section>
+		<section class="split">
+			<section>
+				<div class="contact-method">
+					<span class="icon alt fa-envelope"></span>
+					<h3>Email</h3>
+					<a href="mailto:bensewards@outlook.com">bensewards@outlook.com</a>
+				</div>
+			</section>
+			<!-- <section>
+				<div class="contact-method">
+					<span class="icon alt fa-phone"></span>
+					<h3>Phone</h3>
+					<a href="tel:"></a>
+				</div>
+			</section> -->
+			<section>
+				<div class="contact-method">
+					<span class="icon alt fa-home"></span>
+					<h3>Address</h3>
+					<span>
+					
+					
+					    Gloucester,
+					
+					
+					    MA 
+					
+					
+					    01930<br />
+					
+					
+					    United States of America
+					
+					</span>
+				</div>
+			</section>
+		</section>
+	</div>
+</section>
+
+<!-- Footer -->
+	<footer id="footer">
+		<div class="inner">
+			<ul class="icons">
+				
+					
+						<li>
+							<a href="https://github.com/bewards" class="icon alt fa-github" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+								<span class="label">GitHub</span>
+							</a>
+						</li>
+					
+				
+					
+				
+					
+				
+					
+				
+					
+						<li>
+							<a href="https://www.linkedin.com/in/bensewards/" class="icon alt fa-linkedin" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+								<span class="label">LinkedIn</span>
+							</a>
+						</li>
+					
+				
+					
+				
+					
+				
+					
+				
+			</ul>
+			<ul class="copyright">
+				<li>&copy; Tech Appetite </li>
+				<li>Design: <a href="https://html5up.net" target="_blank">HTML5 UP</a></li>
+			</ul>
+		</div>
+	</footer>
+
+</div>
+
+<!-- Scripts -->
+	<script src="/tech-appetite/assets/js/jquery.min.js"></script>
+	<script src="/tech-appetite/assets/js/jquery.scrolly.min.js"></script>
+	<script src="/tech-appetite/assets/js/jquery.scrollex.min.js"></script>
+	<script src="/tech-appetite/assets/js/skel.min.js"></script>
+	<script src="/tech-appetite/assets/js/util.js"></script>
+	<!--[if lte IE 8]><script src="/tech-appetite/assets/js/ie/respond.min.js"></script><![endif]-->
+	<script src="/tech-appetite/assets/js/main.js"></script>
+
+
+</body>
+
+</html>

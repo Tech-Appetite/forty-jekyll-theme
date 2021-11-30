@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<!--
+	Forty by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+
+<head>
+	<title>Coveo for Sitecore: Configure an External Source Tab without Sitecore Items | Tech Appetite</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<!--[if lte IE 8]><script src="/tech-appetite/assets/js/ie/html5shiv.js"></script><![endif]-->
+	<link rel="stylesheet" href="/tech-appetite/assets/css/main.css" />
+	<!--[if lte IE 9]><link rel="stylesheet" href="/tech-appetite/assets/css/ie9.css" /><![endif]-->
+	<!--[if lte IE 8]><link rel="stylesheet" href="/tech-appetite/assets/css/ie8.css" /><![endif]-->
+</head>
+
+
+<body>
+
+    <!-- Wrapper -->
+<div id="wrapper">
+
+<!-- Header -->
+<header id="header">
+	<a href="/tech-appetite/" class="logo"><strong>Tech Appetite</strong> <span></span></a>
+	<nav>
+		<a href="#menu">Navigate</a>
+	</nav>
+</header>
+
+<!-- Menu -->
+<nav id="menu">
+	<ul class="links">
+        
+		    
+		
+		    
+		
+		    
+		
+		    
+		
+		    
+		        <li><a href="/tech-appetite/">Home</a></li>
+	    	
+		
+		    
+		
+		    
+		
+		
+		    
+		
+		    
+		        <li><a href="/tech-appetite/all_posts.html">All posts</a></li>
+		    
+		
+		    
+		
+		    
+		
+		    
+		
+		    
+		
+	</ul>
+	<!-- <ul class="actions vertical">
+		<li><a href="#" class="button special fit">Get Started</a></li>
+		<li><a href="#" class="button fit">Log In</a></li>
+	</ul> -->
+</nav>
+ 
+    
+    
+<!-- Main -->
+<div id="main" class="alt">
+
+<!-- One -->
+<section id="one">
+	<div class="inner">
+		<header class="major">
+			<h1>Coveo for Sitecore: Configure an External Source Tab without Sitecore Items</h1>
+		</header>
+		<span class="image main"><img src="/tech-appetite/assets/images/coveo-for-sitecore-720x430.png" alt="" /></span>
+		<p>Coveo for Sitecore (Coveo Hive) comes with an out-of-the-box Coveo Tab component that can be useful for switching between different types of Sitecore content, but lacks a direct way within Sitecore to <em>only show External Content without Sitecore content</em>.</p>
+
+<p>If you’re team is lucky enough to have the Enterprise version, then you may be able to get away with adding a rule within the Coveo Tab Datasource field <code class="language-plaintext highlighter-rouge">Filter expression rules</code>, but the rule “where <u>specific</u> field <u>compares to</u> <u>specific value</u>” doesn’t allow you to make a blanket statement rule to not inlude a document that contains a field, which is enough to keep Sitecore documents out of the mix.</p>
+
+<p>A solution I recommend (for both Pro and Enterprise) is to use a Pipeline Advanced Filter. The Datasource for Coveo Tab contains the field <code class="language-plaintext highlighter-rouge">Names of external content sources</code> that will append external coveo sources from your organization to the Coveo API call. It also contains the field <code class="language-plaintext highlighter-rouge">Pipeline</code> for determining which Query Pipeline you would like the request to filter through within the Coveo Admin Portal. The following steps should be taken:</p>
+
+<ol>
+  <li>
+    <p>Add all of your external source names from the Coveo Portal to the field <code class="language-plaintext highlighter-rouge">Names of external content sources</code>:
+<img src="/tech-appetite/assets/images/2021-11-30_field-names-of-external-sources.png" alt="coveo names of external content sources" /></p>
+  </li>
+  <li>
+    <p>Create a new Pipeline in Coveo Portal that your external sources will flow through and paste that Pipeline name into the <code class="language-plaintext highlighter-rouge">Pipeline</code> field:
+<img src="/tech-appetite/assets/images/2021-11-30_coveo-portal-pipeline-community.png" alt="new coveo pipeline for external sources" />
+<img src="/tech-appetite/assets/images/2021-11-30_coveo-pipeline-field.png" alt="new coveo pipeline for external sources" /></p>
+  </li>
+  <li>
+    <p>Within the Coveo Portal, double-click on the created external source Pipeline and navigated to the <code class="language-plaintext highlighter-rouge">Advanced</code> tab and stay on the right-rail Filters section. Click on the <code class="language-plaintext highlighter-rouge">Add rule</code> button and add a new cq (constant query) parameter with the expression <code class="language-plaintext highlighter-rouge">NOT @alltemplates</code>. The condition section can be left empty since we never want to include Sitecore documents. The <code class="language-plaintext highlighter-rouge">@alltemplates</code> field is specific to Sitecore documents, but feel free to use any other field if your external source meta data has created this field:
+<img src="/tech-appetite/assets/images/2021-11-30_coveo-externalsource-pipeline-filter-expression-configure.png" alt="coveo pipeline filter expression to remove sitecore documents" /></p>
+  </li>
+</ol>
+
+	</div>
+</section>
+
+</div>
+
+    <!-- Contact -->
+<section id="contact">
+	<div class="inner">
+		<section>
+			<form action="https://formspree.io/f/mdoyqdrn" method="POST">
+				<div class="field half first">
+					<label for="name">Name</label>
+					<input type="text" name="name" id="name" />
+				</div>
+				<div class="field half">
+					<label for="email">Email</label>
+					<input type="text" name="_replyto" id="email" />
+				</div>
+				<div class="field">
+					<label for="message">Message</label>
+					<textarea name="message" id="message" rows="6"></textarea>
+				</div>
+				<ul class="actions">
+					<li><input type="submit" value="Send Message" class="special" /></li>
+					<li><input type="reset" value="Clear" /></li>
+				</ul>
+			</form>
+		</section>
+		<section class="split">
+			<section>
+				<div class="contact-method">
+					<span class="icon alt fa-envelope"></span>
+					<h3>Email</h3>
+					<a href="mailto:bensewards@outlook.com">bensewards@outlook.com</a>
+				</div>
+			</section>
+			<!-- <section>
+				<div class="contact-method">
+					<span class="icon alt fa-phone"></span>
+					<h3>Phone</h3>
+					<a href="tel:"></a>
+				</div>
+			</section> -->
+			<section>
+				<div class="contact-method">
+					<span class="icon alt fa-home"></span>
+					<h3>Address</h3>
+					<span>
+					
+					
+					    Gloucester,
+					
+					
+					    MA 
+					
+					
+					    01930<br />
+					
+					
+					    United States of America
+					
+					</span>
+				</div>
+			</section>
+		</section>
+	</div>
+</section>
+
+<!-- Footer -->
+	<footer id="footer">
+		<div class="inner">
+			<ul class="icons">
+				
+					
+						<li>
+							<a href="https://github.com/bewards" class="icon alt fa-github" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+								<span class="label">GitHub</span>
+							</a>
+						</li>
+					
+				
+					
+				
+					
+				
+					
+				
+					
+						<li>
+							<a href="https://www.linkedin.com/in/bensewards/" class="icon alt fa-linkedin" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+								<span class="label">LinkedIn</span>
+							</a>
+						</li>
+					
+				
+					
+				
+					
+				
+					
+				
+			</ul>
+			<ul class="copyright">
+				<li>&copy; Tech Appetite </li>
+				<li>Design: <a href="https://html5up.net" target="_blank">HTML5 UP</a></li>
+			</ul>
+		</div>
+	</footer>
+
+</div>
+
+<!-- Scripts -->
+	<script src="/tech-appetite/assets/js/jquery.min.js"></script>
+	<script src="/tech-appetite/assets/js/jquery.scrolly.min.js"></script>
+	<script src="/tech-appetite/assets/js/jquery.scrollex.min.js"></script>
+	<script src="/tech-appetite/assets/js/skel.min.js"></script>
+	<script src="/tech-appetite/assets/js/util.js"></script>
+	<!--[if lte IE 8]><script src="/tech-appetite/assets/js/ie/respond.min.js"></script><![endif]-->
+	<script src="/tech-appetite/assets/js/main.js"></script>
+
+
+</body>
+
+</html>

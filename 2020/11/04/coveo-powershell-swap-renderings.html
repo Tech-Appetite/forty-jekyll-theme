@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<!--
+	Forty by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+
+<head>
+	<title>Sitecore PowerShell Series: Insert appropriate font icons into Sitecore Links | Tech Appetite</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<!--[if lte IE 8]><script src="/tech-appetite/assets/js/ie/html5shiv.js"></script><![endif]-->
+	<link rel="stylesheet" href="/tech-appetite/assets/css/main.css" />
+	<!--[if lte IE 9]><link rel="stylesheet" href="/tech-appetite/assets/css/ie9.css" /><![endif]-->
+	<!--[if lte IE 8]><link rel="stylesheet" href="/tech-appetite/assets/css/ie8.css" /><![endif]-->
+</head>
+
+
+<body>
+
+    <!-- Wrapper -->
+<div id="wrapper">
+
+<!-- Header -->
+<header id="header">
+	<a href="/tech-appetite/" class="logo"><strong>Tech Appetite</strong> <span></span></a>
+	<nav>
+		<a href="#menu">Navigate</a>
+	</nav>
+</header>
+
+<!-- Menu -->
+<nav id="menu">
+	<ul class="links">
+        
+		    
+		
+		    
+		
+		    
+		
+		    
+		
+		    
+		        <li><a href="/tech-appetite/">Home</a></li>
+	    	
+		
+		    
+		
+		    
+		
+		
+		    
+		
+		    
+		        <li><a href="/tech-appetite/all_posts.html">All posts</a></li>
+		    
+		
+		    
+		
+		    
+		
+		    
+		
+		    
+		
+	</ul>
+	<!-- <ul class="actions vertical">
+		<li><a href="#" class="button special fit">Get Started</a></li>
+		<li><a href="#" class="button fit">Log In</a></li>
+	</ul> -->
+</nav>
+ 
+    
+    
+<!-- Main -->
+<div id="main" class="alt">
+
+<!-- One -->
+<section id="one">
+	<div class="inner">
+		<header class="major">
+			<h1>Sitecore PowerShell Series: Insert appropriate font icons into Sitecore Links</h1>
+		</header>
+		<span class="image main"><img src="/tech-appetite/assets/images/sitecore-and-powershell.jpg" alt="" /></span>
+		<h2 id="the-scenario">The Scenario</h2>
+<p>In my scenario, we’re dealing with a complete Sitecore Implementation where Coveo has been tacked on. Let’s say that we’ve just finished implementing a Coveo Search Results page for a particular section. After the search results page usually comes an example implementation of a Page that has stand-alone search behavior that redirects the user to the search results page. Let’s also say that this has been configured on an example page for now by adding the Coveo Hiv Search Box component within a Search Section and an External Components Section. The External Components Section includes a Datasource necessary for connecting the Coveo Hive Search Interfance and the Search Box includes a Datasource necessary for pointing the Search box to the search results page.</p>
+
+<p><img src="/tech-appetite/assets/images/screenshot_standalone-searchbox-pages.png" alt="" /></p>
+
+<h2 id="the-process">The Process</h2>
+<p>This process of setting up the Coveo stand-alone search behavior has to be done within Experience Editor due to dynamic placeholders and can take roughly 15-20 minutes per Page, especially if there are a lot of Rendering Parameters that need to be set up. In many cases, this example page with stand-alone search behavior has to be switched out on every page that previously had a searchbox. Handling this manually could take over a day to configure during a deployment to CM. A first thought could be to configure this within Std Values, but then you would have to reset every item’s Rendering Definition and completely lose any overrides of components per page. By using Sitecore PowerShell we can maintain the positioning with dynamic placeholders for the searchbox and versioning of each item that is swapped.</p>
+
+<h3 id="spe-script-swap-out-renderings">SPE Script: Swap out Renderings</h3>
+<p>The SPE script below will handle swapping out the old search component whether from Shared or Final Renderings and maintain the Rendering Parameters and Datasource from the Coveo Hive components on the example set up page:</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">##########################################################</span><span class="w">
+</span><span class="c">#</span><span class="w">
+</span><span class="c">#		This script will switch out old search renderings with new Coveo (custom) Hive Renderings</span><span class="w">
+</span><span class="c">#			- The new Renderings will maintain the Rendering Parameters and Dynamic Placeholders from the single Page Item that is set up correctly</span><span class="w">
+</span><span class="c">#			- The old search renderings can be removed from either Shared or Final layout</span><span class="w">
+</span><span class="c">#</span><span class="w">
+</span><span class="c">###########################################################</span><span class="w">
+
+</span><span class="n">Write-Host</span><span class="w"> </span><span class="s2">"BEGIN: Query for pages that have the old Search Keyword Rendering in either shared or final __renderings"</span><span class="w">
+
+</span><span class="c">## Query all pages that contain the old search rendering either within the shared or final layout</span><span class="w">
+</span><span class="nv">$queriedItems</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Get-Item</span><span class="w"> </span><span class="nt">-Path</span><span class="w"> </span><span class="nx">master:</span><span class="w"> </span><span class="nt">-Query</span><span class="w"> </span><span class="s2">"/sitecore/content/Shared/pages/energy//*[contains(@__Renderings, '{D7C47D4D-C50E-4AEF-B805-1ADE1B854605}') or contains(@__Final Renderings, '{D7C47D4D-C50E-4AEF-B805-1ADE1B854605}')]"</span><span class="w">
+</span><span class="n">Write-Host</span><span class="w"> </span><span class="nv">$queriedItems</span><span class="o">.</span><span class="nf">Count</span><span class="w"> </span><span class="s2">" items found"</span><span class="w"> </span><span class="nt">-ForegroundColor</span><span class="w"> </span><span class="s2">"Green"</span><span class="p">;</span><span class="w">	</span><span class="n">Write-Host</span><span class="w"> </span><span class="s2">""</span><span class="w">
+
+</span><span class="nv">$reportOnly</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$false</span><span class="w">
+</span><span class="nv">$finalItems</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">@()</span><span class="w">
+
+</span><span class="c">## get the single item that has already been converted to the Coveo Hive stand-alone search: /Pages/Coveo Energy</span><span class="w">
+</span><span class="nv">$coveoStandaloneSearchboxContentItem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Get-Item</span><span class="w"> </span><span class="nt">-Path</span><span class="w"> </span><span class="nx">master:</span><span class="w"> </span><span class="nt">-ID</span><span class="w"> </span><span class="s2">"{9921DC61-47D7-4269-9758-749DD785E113}"</span><span class="w">
+
+</span><span class="c">## get rendering items</span><span class="w">
+</span><span class="nv">$ri__ExternalComponentsSection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Get-Item</span><span class="w"> </span><span class="nt">-Path</span><span class="w"> </span><span class="nx">master:</span><span class="w"> </span><span class="nt">-ID</span><span class="w"> </span><span class="s2">"{F569344F-3933-45F1-92FE-F6A44159D2AE}"</span><span class="w">
+</span><span class="nv">$ri__GlobalSearchSection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Get-Item</span><span class="w"> </span><span class="nt">-Path</span><span class="w"> </span><span class="nx">master:</span><span class="w"> </span><span class="nt">-ID</span><span class="w"> </span><span class="s2">"{FDCEBA24-58B4-4279-BB7C-E605F5A32307}"</span><span class="w">
+</span><span class="nv">$ri__CustomCoveoGlobalSearchBox</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Get-Item</span><span class="w"> </span><span class="nt">-Path</span><span class="w"> </span><span class="nx">master:</span><span class="w"> </span><span class="nt">-ID</span><span class="w"> </span><span class="s2">"{E43BBC7B-2910-4B1E-8320-E3E747516826}"</span><span class="w">
+
+</span><span class="c">## get rendering instances of renderings that we want to add that are pre-filled with Rendering Parameters (dynamic placeholder, datasource, etc.)</span><span class="w">
+</span><span class="nv">$renderingInstance_ExternalComponentsSection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Get-Rendering</span><span class="w"> </span><span class="nt">-Item</span><span class="w"> </span><span class="nv">$coveoStandaloneSearchboxContentItem</span><span class="w"> </span><span class="nt">-Rendering</span><span class="w"> </span><span class="nv">$ri__ExternalComponentsSection</span><span class="w"> </span><span class="nt">-Device</span><span class="w"> </span><span class="p">(</span><span class="n">Get-LayoutDevice</span><span class="w"> </span><span class="s2">"Default"</span><span class="p">)</span><span class="w"> </span><span class="nt">-FinalLayout</span><span class="w">
+</span><span class="nv">$renderingInstance_GlobalSearchSection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Get-Rendering</span><span class="w"> </span><span class="nt">-Item</span><span class="w"> </span><span class="nv">$coveoStandaloneSearchboxContentItem</span><span class="w"> </span><span class="nt">-Rendering</span><span class="w"> </span><span class="nv">$ri__GlobalSearchSection</span><span class="w"> </span><span class="nt">-Device</span><span class="w"> </span><span class="p">(</span><span class="n">Get-LayoutDevice</span><span class="w"> </span><span class="s2">"Default"</span><span class="p">)</span><span class="w"> </span><span class="nt">-FinalLayout</span><span class="w">
+</span><span class="nv">$renderingInstance_CustomCoveoGlobalSearchBox</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Get-Rendering</span><span class="w"> </span><span class="nt">-Item</span><span class="w"> </span><span class="nv">$coveoStandaloneSearchboxContentItem</span><span class="w"> </span><span class="nt">-Rendering</span><span class="w"> </span><span class="nv">$ri__CustomCoveoGlobalSearchBox</span><span class="w"> </span><span class="nt">-Device</span><span class="w"> </span><span class="p">(</span><span class="n">Get-LayoutDevice</span><span class="w"> </span><span class="s2">"Default"</span><span class="p">)</span><span class="w"> </span><span class="nt">-FinalLayout</span><span class="w">
+
+</span><span class="n">Write-Host</span><span class="w"> </span><span class="s2">"Swap out old search box rendering for Coveo Searchbox Rendering and Hive counterparts"</span><span class="w">
+
+</span><span class="nv">$queriedItems</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">foreach-object</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="c">## item must have layout</span><span class="w">
+    </span><span class="kr">if</span><span class="w"> </span><span class="p">(</span><span class="n">Get-Layout</span><span class="w"> </span><span class="bp">$_</span><span class="p">)</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+        </span><span class="c">## TESTING: only perform on single content item that is duplicate</span><span class="w">
+        </span><span class="c">#if($_.DisplayName -ne "Copy of [Old Stand-alone Search Page]") { return }</span><span class="w">
+        
+        </span><span class="nv">$isInShared</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$false</span><span class="w">
+        
+        </span><span class="nv">$renderingToRemove</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Get-Rendering</span><span class="w"> </span><span class="nt">-Item</span><span class="w"> </span><span class="bp">$_</span><span class="w"> </span><span class="nt">-Rendering</span><span class="w"> </span><span class="p">(</span><span class="n">Get-Item</span><span class="w"> </span><span class="nt">-Path</span><span class="w"> </span><span class="nx">master:</span><span class="w"> </span><span class="nt">-ID</span><span class="w"> </span><span class="s2">"{D7C47D4D-C50E-4AEF-B805-1ADE1B854605}"</span><span class="p">)</span><span class="w"> </span><span class="nt">-Device</span><span class="w"> </span><span class="p">(</span><span class="n">Get-LayoutDevice</span><span class="w"> </span><span class="s2">"Default"</span><span class="p">)</span><span class="w"> </span><span class="nt">-FinalLayout</span><span class="w">
+        </span><span class="kr">if</span><span class="p">(</span><span class="nv">$renderingToRemove</span><span class="w"> </span><span class="o">-eq</span><span class="w"> </span><span class="bp">$null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nv">$renderingToRemove</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Get-Rendering</span><span class="w"> </span><span class="nt">-Item</span><span class="w"> </span><span class="bp">$_</span><span class="w"> </span><span class="nt">-Rendering</span><span class="w"> </span><span class="p">(</span><span class="n">Get-Item</span><span class="w"> </span><span class="nt">-Path</span><span class="w"> </span><span class="nx">master:</span><span class="w"> </span><span class="nt">-ID</span><span class="w"> </span><span class="s2">"{D7C47D4D-C50E-4AEF-B805-1ADE1B854605}"</span><span class="p">)</span><span class="w"> </span><span class="nt">-Device</span><span class="w"> </span><span class="p">(</span><span class="n">Get-LayoutDevice</span><span class="w"> </span><span class="s2">"Default"</span><span class="p">)</span><span class="w">
+            </span><span class="nv">$isInShared</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$true</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+        
+        </span><span class="c">## remove old search box</span><span class="w">
+        </span><span class="kr">if</span><span class="p">(</span><span class="nv">$isInShared</span><span class="p">){</span><span class="w">
+            </span><span class="n">Remove-Rendering</span><span class="w"> </span><span class="nt">-Item</span><span class="w"> </span><span class="bp">$_</span><span class="w"> </span><span class="nt">-Instance</span><span class="w"> </span><span class="nv">$renderingToRemove</span><span class="w"> </span><span class="nt">-Device</span><span class="w"> </span><span class="p">(</span><span class="n">Get-LayoutDevice</span><span class="w"> </span><span class="s2">"Default"</span><span class="p">)</span><span class="w">
+        </span><span class="p">}</span><span class="w"> </span><span class="kr">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="n">Remove-Rendering</span><span class="w"> </span><span class="nt">-Item</span><span class="w"> </span><span class="bp">$_</span><span class="w"> </span><span class="nt">-Instance</span><span class="w"> </span><span class="nv">$renderingToRemove</span><span class="w"> </span><span class="nt">-Device</span><span class="w"> </span><span class="p">(</span><span class="n">Get-LayoutDevice</span><span class="w"> </span><span class="s2">"Default"</span><span class="p">)</span><span class="w"> </span><span class="nt">-FinalLayout</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+        
+        </span><span class="c">## add new renderings to *shared</span><span class="w">
+        </span><span class="n">Add-Rendering</span><span class="w"> </span><span class="nt">-Item</span><span class="w"> </span><span class="bp">$_</span><span class="w"> </span><span class="nt">-Instance</span><span class="w"> </span><span class="nv">$renderingInstance_ExternalComponentsSection</span><span class="w"> </span><span class="nt">-PlaceHolder</span><span class="w"> </span><span class="nv">$renderingInstance_ExternalComponentsSection</span><span class="o">.</span><span class="nf">Placeholder</span><span class="w"> </span><span class="nt">-Device</span><span class="w"> </span><span class="p">(</span><span class="n">Get-LayoutDevice</span><span class="w"> </span><span class="s2">"Default"</span><span class="p">)</span><span class="w"> </span><span class="nt">-Index</span><span class="w"> </span><span class="mi">0</span><span class="w">
+        </span><span class="n">Add-Rendering</span><span class="w"> </span><span class="nt">-Item</span><span class="w"> </span><span class="bp">$_</span><span class="w"> </span><span class="nt">-Instance</span><span class="w"> </span><span class="nv">$renderingInstance_GlobalSearchSection</span><span class="w"> </span><span class="nt">-PlaceHolder</span><span class="w"> </span><span class="nv">$renderingInstance_GlobalSearchSection</span><span class="o">.</span><span class="nf">Placeholder</span><span class="w"> </span><span class="nt">-Device</span><span class="w"> </span><span class="p">(</span><span class="n">Get-LayoutDevice</span><span class="w"> </span><span class="s2">"Default"</span><span class="p">)</span><span class="w"> </span><span class="nt">-Index</span><span class="w"> </span><span class="mi">1</span><span class="w">
+        </span><span class="n">Add-Rendering</span><span class="w"> </span><span class="nt">-Item</span><span class="w"> </span><span class="bp">$_</span><span class="w"> </span><span class="nt">-Instance</span><span class="w"> </span><span class="nv">$renderingInstance_CustomCoveoGlobalSearchBox</span><span class="w"> </span><span class="nt">-PlaceHolder</span><span class="w"> </span><span class="nv">$renderingInstance_CustomCoveoGlobalSearchBox</span><span class="o">.</span><span class="nf">Placeholder</span><span class="w"> </span><span class="nt">-Device</span><span class="w"> </span><span class="p">(</span><span class="n">Get-LayoutDevice</span><span class="w"> </span><span class="s2">"Default"</span><span class="p">)</span><span class="w"> </span><span class="nt">-Index</span><span class="w"> </span><span class="mi">2</span><span class="w">
+        
+        </span><span class="c">## get new rendering instances and set placeholders of each based on their unique ids</span><span class="w">
+        </span><span class="nv">$r1_instance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Get-Rendering</span><span class="w"> </span><span class="nt">-Item</span><span class="w"> </span><span class="bp">$_</span><span class="w"> </span><span class="nt">-Rendering</span><span class="w"> </span><span class="nv">$ri__ExternalComponentsSection</span><span class="w">
+        </span><span class="nv">$r2_instance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Get-Rendering</span><span class="w"> </span><span class="nt">-Item</span><span class="w"> </span><span class="bp">$_</span><span class="w"> </span><span class="nt">-Rendering</span><span class="w"> </span><span class="nv">$ri__GlobalSearchSection</span><span class="w">
+        </span><span class="nv">$r3_instance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Get-Rendering</span><span class="w"> </span><span class="nt">-Item</span><span class="w"> </span><span class="bp">$_</span><span class="w"> </span><span class="nt">-Rendering</span><span class="w"> </span><span class="nv">$ri__CustomCoveoGlobalSearchBox</span><span class="w">
+        
+		</span><span class="c">## the unique id of the rendering instance (minus the curly brackets) is used within Coveo Hive after "dynamic_coveo"</span><span class="w">
+        </span><span class="nv">$r1_ph</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$r1_instance</span><span class="o">.</span><span class="nf">UniqueId</span><span class="o">.</span><span class="nf">Substring</span><span class="p">(</span><span class="nx">1</span><span class="p">,</span><span class="nx">8</span><span class="p">)</span><span class="o">.</span><span class="nf">ToLower</span><span class="p">()</span><span class="w">
+        </span><span class="nv">$r2_ph</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$r2_instance</span><span class="o">.</span><span class="nf">UniqueId</span><span class="o">.</span><span class="nf">Substring</span><span class="p">(</span><span class="nx">1</span><span class="p">,</span><span class="nx">8</span><span class="p">)</span><span class="o">.</span><span class="nf">ToLower</span><span class="p">()</span><span class="w">
+        </span><span class="nv">$r3_ph</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$r3_instance</span><span class="o">.</span><span class="nf">UniqueId</span><span class="o">.</span><span class="nf">Substring</span><span class="p">(</span><span class="nx">1</span><span class="p">,</span><span class="nx">8</span><span class="p">)</span><span class="o">.</span><span class="nf">ToLower</span><span class="p">()</span><span class="w">
+        
+        </span><span class="nv">$r2_instance</span><span class="o">.</span><span class="nf">PlaceHolder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"/pagebody/body/main/rail/coveo-ui-external-components_dynamic_coveo{0}"</span><span class="w"> </span><span class="nt">-f</span><span class="w"> </span><span class="nv">$r1_ph</span><span class="w">
+        </span><span class="n">Set-Rendering</span><span class="w"> </span><span class="nt">-Item</span><span class="w"> </span><span class="bp">$_</span><span class="w"> </span><span class="nt">-Instance</span><span class="w"> </span><span class="nv">$r2_instance</span><span class="w"> </span><span class="nt">-FinalLayout</span><span class="w">
+        
+        </span><span class="nv">$r3_instance</span><span class="o">.</span><span class="nf">PlaceHolder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"{0}/coveo-ui-global-searchbox_dynamic_coveo{1}"</span><span class="w"> </span><span class="nt">-f</span><span class="w"> </span><span class="nv">$r2_instance</span><span class="o">.</span><span class="nf">Placeholder</span><span class="p">,</span><span class="nv">$r2_ph</span><span class="w">
+        </span><span class="n">Set-Rendering</span><span class="w"> </span><span class="nt">-Item</span><span class="w"> </span><span class="bp">$_</span><span class="w"> </span><span class="nt">-Instance</span><span class="w"> </span><span class="nv">$r3_instance</span><span class="w"> </span><span class="nt">-FinalLayout</span><span class="w">
+        
+        </span><span class="nv">$finalItems</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="bp">$_</span><span class="w">
+        </span><span class="n">Write-Host</span><span class="w"> </span><span class="bp">$_</span><span class="o">.</span><span class="nf">name</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">Write-Host</span><span class="w"> </span><span class="s2">"Final Items"</span><span class="w"> </span><span class="nv">$finalItems</span><span class="o">.</span><span class="nf">Count</span><span class="w"> </span><span class="nt">-ForegroundColor</span><span class="w"> </span><span class="s2">"Green"</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="testing">Testing</h3>
+<p>From the SPE script above, simply uncomment the line underneath “TESTING”, create a duplicate of any old stand-alone search page, and replace <code class="language-plaintext highlighter-rouge">[Old Stand-alone Search Page]</code> with said Item’s path. After running the script, the duplicate item will have swapped out the old search component with the Coveo Hive components.</p>
+
+	</div>
+</section>
+
+</div>
+
+    <!-- Contact -->
+<section id="contact">
+	<div class="inner">
+		<section>
+			<form action="https://formspree.io/f/mdoyqdrn" method="POST">
+				<div class="field half first">
+					<label for="name">Name</label>
+					<input type="text" name="name" id="name" />
+				</div>
+				<div class="field half">
+					<label for="email">Email</label>
+					<input type="text" name="_replyto" id="email" />
+				</div>
+				<div class="field">
+					<label for="message">Message</label>
+					<textarea name="message" id="message" rows="6"></textarea>
+				</div>
+				<ul class="actions">
+					<li><input type="submit" value="Send Message" class="special" /></li>
+					<li><input type="reset" value="Clear" /></li>
+				</ul>
+			</form>
+		</section>
+		<section class="split">
+			<section>
+				<div class="contact-method">
+					<span class="icon alt fa-envelope"></span>
+					<h3>Email</h3>
+					<a href="mailto:bensewards@outlook.com">bensewards@outlook.com</a>
+				</div>
+			</section>
+			<!-- <section>
+				<div class="contact-method">
+					<span class="icon alt fa-phone"></span>
+					<h3>Phone</h3>
+					<a href="tel:"></a>
+				</div>
+			</section> -->
+			<section>
+				<div class="contact-method">
+					<span class="icon alt fa-home"></span>
+					<h3>Address</h3>
+					<span>
+					
+					
+					    Gloucester,
+					
+					
+					    MA 
+					
+					
+					    01930<br />
+					
+					
+					    United States of America
+					
+					</span>
+				</div>
+			</section>
+		</section>
+	</div>
+</section>
+
+<!-- Footer -->
+	<footer id="footer">
+		<div class="inner">
+			<ul class="icons">
+				
+					
+						<li>
+							<a href="https://github.com/bewards" class="icon alt fa-github" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+								<span class="label">GitHub</span>
+							</a>
+						</li>
+					
+				
+					
+				
+					
+				
+					
+				
+					
+						<li>
+							<a href="https://www.linkedin.com/in/bensewards/" class="icon alt fa-linkedin" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+								<span class="label">LinkedIn</span>
+							</a>
+						</li>
+					
+				
+					
+				
+					
+				
+					
+				
+			</ul>
+			<ul class="copyright">
+				<li>&copy; Tech Appetite </li>
+				<li>Design: <a href="https://html5up.net" target="_blank">HTML5 UP</a></li>
+			</ul>
+		</div>
+	</footer>
+
+</div>
+
+<!-- Scripts -->
+	<script src="/tech-appetite/assets/js/jquery.min.js"></script>
+	<script src="/tech-appetite/assets/js/jquery.scrolly.min.js"></script>
+	<script src="/tech-appetite/assets/js/jquery.scrollex.min.js"></script>
+	<script src="/tech-appetite/assets/js/skel.min.js"></script>
+	<script src="/tech-appetite/assets/js/util.js"></script>
+	<!--[if lte IE 8]><script src="/tech-appetite/assets/js/ie/respond.min.js"></script><![endif]-->
+	<script src="/tech-appetite/assets/js/main.js"></script>
+
+
+</body>
+
+</html>
